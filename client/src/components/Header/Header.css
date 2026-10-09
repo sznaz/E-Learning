@@ -1,0 +1,22 @@
+.headerWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #4a1655;
+  margin-bottom: 40px;
+}
+.menuItem {
+  list-style: none;
+  text-decoration: none;
+  color: white;
+}
+.title {
+  color: #4a1655;
+  color: white;
+}
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

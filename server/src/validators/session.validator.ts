@@ -1,0 +1,27 @@
+import { z } from "zod";
+
+const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+const objectIdSchema = z
+  .string()
+  .regex(objectIdRegex, "Invalid ObjectId format");
+
+export const createSessionSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Title must be at least 3 characters")
+    .max(150, "Title cannot exceed 150 characters"),
+  description: z.string().optional(),
+  course: objectIdSchema.optional(),
+  instructor: objectIdSchema,
+  startTime: z.string().datetime({ message: "startTime must be a valid ISO date string" }).or(z.coerce.date()),
+  endTime: z.string().datetime({ message: "endTime must be a valid ISO date string" }).or(z.coerce.date()),
+  meetingLink: z.string().min(1, "Meeting link is required"),
+  status: z.enum(["SCHEDULED", "LIVE", "COMPLETED", "CANCELLED"]).optional(),
+  attendees: z.array(objectIdSchema).optional(),
+  maxAttendees: z.number().int().min(1, "Max attendees must be at least 1").optional(),
+});
+
+export const updateSessionSchema = createSessionSchema.partial();
+
+export type CreateSessionDto = z.infer<typeof createSessionSchema>;
+export type UpdateSessionDto = z.infer<typeof updateSessionSchema>;
