@@ -18,9 +18,9 @@ router.get(
   "/",
   authenticate,
   authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await sessionService.getSessions();
+      const response = await sessionService.getSessions(req.query as any);
       res.status(response.statusCode).json(response);
     } catch (error) {
       next(error);
@@ -33,9 +33,9 @@ router.get(
   "/all",
   authenticate,
   authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await sessionService.getSessions();
+      const response = await sessionService.getSessions(req.query as any);
       res.status(response.statusCode).json(response);
     } catch (error) {
       next(error);
@@ -67,6 +67,9 @@ router.post(
   validate(createSessionSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!req.body.instructor && req.user?.id) {
+        req.body.instructor = req.user.id;
+      }
       const response = await sessionService.createSession(req.body);
       res.status(response.statusCode).json(response);
     } catch (error) {

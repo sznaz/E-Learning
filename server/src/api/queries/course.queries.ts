@@ -3,10 +3,8 @@ import { Course, ICourse } from "../models/course.model";
 
 export interface ICourseFilterOptions {
   search?: string;
-  category?: string;
   level?: string;
   language?: string;
-  isPublished?: boolean;
 }
 
 class CourseQueries {
@@ -23,20 +21,12 @@ class CourseQueries {
   ): Promise<ICourse[]> => {
     const filter: Record<string, any> = {};
 
-    if (options.category) {
-      filter.category = options.category;
-    }
-
     if (options.level) {
       filter.level = options.level;
     }
 
     if (options.language) {
       filter.language = options.language;
-    }
-
-    if (typeof options.isPublished === "boolean") {
-      filter.isPublished = options.isPublished;
     }
 
     if (options.search) {

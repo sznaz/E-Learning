@@ -46,6 +46,22 @@ class Responses {
     };
   }
 
+  public static unauthorized(message: string = "Unauthorized"): IResponse<null> {
+    return {
+      error: true,
+      statusCode: 401,
+      message,
+    };
+  }
+
+  public static forbidden(message: string = "Forbidden"): IResponse<null> {
+    return {
+      error: true,
+      statusCode: 403,
+      message,
+    };
+  }
+
   public static serverError(message: string): IResponse<null> {
     return {
       error: true,

@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import Responses from "../../config/responses";
 import {
   ICreateUserPayload,
@@ -52,6 +53,11 @@ class UserService {
         return Responses.conflict("User with this email already exists");
       }
       payload.email = payload.email.toLowerCase();
+    }
+
+    if (payload.password) {
+      const salt = await bcrypt.genSalt(10);
+      payload.password = await bcrypt.hash(payload.password, salt);
     }
 
     const updatedUser = await userQueries.update(id, payload);

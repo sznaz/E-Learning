@@ -11,14 +11,11 @@ export const createSessionSchema = z.object({
     .min(3, "Title must be at least 3 characters")
     .max(150, "Title cannot exceed 150 characters"),
   description: z.string().optional(),
-  course: objectIdSchema.optional(),
-  instructor: objectIdSchema,
+  instructor: objectIdSchema.optional(),
   startTime: z.string().datetime({ message: "startTime must be a valid ISO date string" }).or(z.coerce.date()),
   endTime: z.string().datetime({ message: "endTime must be a valid ISO date string" }).or(z.coerce.date()),
   meetingLink: z.string().min(1, "Meeting link is required"),
   status: z.enum(["SCHEDULED", "LIVE", "COMPLETED", "CANCELLED"]).optional(),
-  attendees: z.array(objectIdSchema).optional(),
-  maxAttendees: z.number().int().min(1, "Max attendees must be at least 1").optional(),
 });
 
 export const updateSessionSchema = createSessionSchema.partial();

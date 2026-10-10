@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, CookieOptions } from "express";
 import jwt from "jsonwebtoken";
 import { UserRole } from "../api/models/user.model";
 import { IAuthUser } from "../types";
@@ -16,7 +16,34 @@ export const generateToken = (
 };
 
 /**
- * Middleware to authenticate requests using JWT Bearer token
+ * Verifies a JWT token
+ */
+export const verifyToken = (token: string): IAuthUser => {
+  return jwt.verify(token, JWT_SECRET) as IAuthUser;
+};
+
+export const AUTH_COOKIE_NAME = "token";
+
+export const getAuthCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: "/",
+});
+
+export const getClearAuthCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+});
+
+export const generateAccessToken = generateToken;
+export const verifyAccessToken = verifyToken;
+
+/**
+ * Middleware to authenticate requests using token
  */
 export const authenticate = (
   req: Request,
@@ -29,6 +56,8 @@ export const authenticate = (
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
+    } else if (req.cookies && req.cookies[AUTH_COOKIE_NAME]) {
+      token = req.cookies[AUTH_COOKIE_NAME];
     } else if (req.headers["x-access-token"]) {
       token = String(req.headers["x-access-token"]);
     }
@@ -81,7 +110,7 @@ export const authorizeRoles = (...roles: UserRole[]) => {
       res.status(403).json({
         error: true,
         statusCode: 403,
-        message: `Forbidden: Access denied. Role '${req.user.role}' is not authorized.}`,
+        message: `Forbidden: Access denied. Role '${req.user.role}' is not authorized`,
       });
       return;
     }

@@ -23,6 +23,37 @@ declare global {
   }
 }
 
+// Auth Payloads
+export interface IRegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+export interface ILoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface IAuthUserSummary {
+  _id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IAuthResponseData {
+  user: IAuthUserSummary;
+  token: string;
+}
+
+export interface ITokenResponseData {
+  token: string;
+}
+
 // User Payloads
 export interface ICreateUserPayload {
   name: string;

@@ -13,15 +13,12 @@ class SessionQueries {
     const session = await Session.create(payload);
     return session.populate([
       { path: "instructor", select: "name email role" },
-      { path: "course", select: "title price category thumbnail" },
     ]);
   };
 
   public findById = async (id: string): Promise<ISession | null> => {
     return Session.findById(id)
       .populate("instructor", "name email role")
-      .populate("course", "title price category thumbnail")
-      .populate("attendees", "name email role")
       .exec();
   };
 
@@ -29,10 +26,6 @@ class SessionQueries {
     options: ISessionFilterOptions = {}
   ): Promise<ISession[]> => {
     const filter: Record<string, any> = {};
-
-    if (options.course) {
-      filter.course = options.course;
-    }
 
     if (options.instructor) {
       filter.instructor = options.instructor;
@@ -51,7 +44,6 @@ class SessionQueries {
 
     return Session.find(filter)
       .populate("instructor", "name email role")
-      .populate("course", "title price category thumbnail")
       .sort({ startTime: 1 })
       .lean<ISession[]>()
       .exec();
@@ -66,8 +58,6 @@ class SessionQueries {
       runValidators: true,
     })
       .populate("instructor", "name email role")
-      .populate("course", "title price category thumbnail")
-      .populate("attendees", "name email role")
       .exec();
   };
 

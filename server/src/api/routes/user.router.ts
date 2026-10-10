@@ -18,9 +18,9 @@ router.get(
   "/",
   authenticate,
   authorizeRoles("SUPER_ADMIN", "TEACHER"),
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await userService.getUsers();
+      const response = await userService.getUsers(req.query);
       res.status(response.statusCode).json(response);
     } catch (error) {
       next(error);
@@ -33,9 +33,9 @@ router.get(
   "/all",
   authenticate,
   authorizeRoles("SUPER_ADMIN", "TEACHER"),
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await userService.getUsers();
+      const response = await userService.getUsers(req.query);
       res.status(response.statusCode).json(response);
     } catch (error) {
       next(error);

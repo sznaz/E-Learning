@@ -13,11 +13,9 @@ import {
 const router = Router();
 const courseService = new CourseService();
 
-// GET all courses - Accessible by STUDENT, TEACHER, SUPER_ADMIN
+// GET all courses - Accessible by all users
 router.get(
   "/",
-  authenticate,
-  authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
   async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const response = await courseService.getCourses();
@@ -43,11 +41,9 @@ router.get(
   }
 );
 
-// GET course by ID - Accessible by STUDENT, TEACHER, SUPER_ADMIN
+// GET course by ID - Accessible by all users
 router.get(
   "/:id",
-  authenticate,
-  authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id as string;
