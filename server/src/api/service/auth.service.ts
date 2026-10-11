@@ -7,7 +7,11 @@ import {
   IAuthUser,
 } from "../../types";
 import UserQueries from "../queries/user.queries";
-import { generateToken } from "../../middlewares/auth.middleware";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../../middlewares/auth.middleware";
 
 const userQueries = new UserQueries();
 
@@ -32,13 +36,15 @@ class AuthService {
       role: user.role,
     };
 
-    const token = generateToken(authUser);
+    const token = generateAccessToken(authUser);
+    const refreshToken = generateRefreshToken(authUser);
     const userSummary = user.toJSON();
 
     return Responses.created(
       {
         user: userSummary,
         token,
+        refreshToken,
       },
       "User registered successfully"
     );
@@ -64,16 +70,51 @@ class AuthService {
       role: user.role,
     };
 
-    const token = generateToken(authUser);
+    const token = generateAccessToken(authUser);
+    const refreshToken = generateRefreshToken(authUser);
     const userSummary = user.toJSON();
 
     return Responses.ok(
       {
         user: userSummary,
         token,
+        refreshToken,
       },
       "Login successful"
     );
+  };
+
+  public refresh = async (
+    refreshToken: string
+  ): Promise<IResponse<IAuthResponseData | null>> => {
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+      const user = await userQueries.findById(decoded.id);
+      if (!user) {
+        return Responses.unauthorized("User no longer exists");
+      }
+
+      const authUser: IAuthUser = {
+        id: user._id.toString(),
+        email: user.email,
+        role: user.role,
+      };
+
+      const token = generateAccessToken(authUser);
+      const newRefreshToken = generateRefreshToken(authUser);
+      const userSummary = user.toJSON();
+
+      return Responses.ok(
+        {
+          user: userSummary,
+          token,
+          refreshToken: newRefreshToken,
+        },
+        "Token refreshed successfully"
+      );
+    } catch {
+      return Responses.unauthorized("Invalid or expired refresh token");
+    }
   };
 
   public logout = async (): Promise<IResponse<null>> => {

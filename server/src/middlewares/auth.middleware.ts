@@ -4,27 +4,50 @@ import { UserRole } from "../api/models/user.model";
 import { IAuthUser } from "../types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "e_learn_super_secret_key";
+const JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET || "e_learn_super_refresh_secret_key";
 
 /**
- * Generates a signed JWT token for a user
+ * Generates an access JWT token for a user
  */
-export const generateToken = (
+export const generateAccessToken = (
   payload: IAuthUser,
-  expiresIn: string = "7d"
+  expiresIn: string = "15m"
 ): string => {
   return jwt.sign(payload, JWT_SECRET, { expiresIn } as jwt.SignOptions);
 };
 
+export const generateToken = generateAccessToken;
+
 /**
- * Verifies a JWT token
+ * Generates a refresh JWT token for a user
  */
-export const verifyToken = (token: string): IAuthUser => {
+export const generateRefreshToken = (
+  payload: IAuthUser,
+  expiresIn: string = "7d"
+): string => {
+  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn } as jwt.SignOptions);
+};
+
+/**
+ * Verifies an access token
+ */
+export const verifyAccessToken = (token: string): IAuthUser => {
   return jwt.verify(token, JWT_SECRET) as IAuthUser;
 };
 
-export const AUTH_COOKIE_NAME = "token";
+export const verifyToken = verifyAccessToken;
 
-export const getAuthCookieOptions = (): CookieOptions => ({
+/**
+ * Verifies a refresh token
+ */
+export const verifyRefreshToken = (token: string): IAuthUser => {
+  return jwt.verify(token, JWT_REFRESH_SECRET) as IAuthUser;
+};
+
+export const REFRESH_COOKIE_NAME = "refreshToken";
+
+export const getRefreshCookieOptions = (): CookieOptions => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -32,15 +55,12 @@ export const getAuthCookieOptions = (): CookieOptions => ({
   path: "/",
 });
 
-export const getClearAuthCookieOptions = (): CookieOptions => ({
+export const getClearRefreshCookieOptions = (): CookieOptions => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   path: "/",
 });
-
-export const generateAccessToken = generateToken;
-export const verifyAccessToken = verifyToken;
 
 /**
  * Middleware to authenticate requests using token
@@ -56,8 +76,6 @@ export const authenticate = (
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
-    } else if (req.cookies && req.cookies[AUTH_COOKIE_NAME]) {
-      token = req.cookies[AUTH_COOKIE_NAME];
     } else if (req.headers["x-access-token"]) {
       token = String(req.headers["x-access-token"]);
     }

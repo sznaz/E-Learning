@@ -48,6 +48,7 @@ export interface IAuthUserSummary {
 export interface IAuthResponseData {
   user: IAuthUserSummary;
   token: string;
+  refreshToken?: string;
 }
 
 export interface ITokenResponseData {
