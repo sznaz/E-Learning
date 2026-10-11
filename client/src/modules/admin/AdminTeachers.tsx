@@ -33,7 +33,7 @@ import {
 import { usersApi } from "../../api/users";
 import { User } from "../../api/auth";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import CreateTeacherDialog from "./CreateTeacherDialog";
+import CreateUserDialog from "./CreateUserDialog";
 
 export const AdminTeachers: React.FC = () => {
   const [teachers, setTeachers] = useState<User[]>([]);
@@ -404,10 +404,11 @@ export const AdminTeachers: React.FC = () => {
       </Card>
 
       {/* Add / Edit Teacher Dialog */}
-      {/* Add / Edit Teacher Dialog */}
-      <CreateTeacherDialog
+      <CreateUserDialog
         open={formOpen}
-        teacher={editingTeacher}
+        user={editingTeacher}
+        fixedRole="TEACHER"
+        entityLabel="Instructor"
         onClose={() => setFormOpen(false)}
         onSuccess={(msg) => {
           setSnackbar({

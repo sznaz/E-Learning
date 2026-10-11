@@ -150,6 +150,9 @@ export const CreateCourseDialog: React.FC<CreateCourseDialogProps> = ({
           )}
 
           <TextField
+            sx={{
+              marginTop: 2,
+            }}
             fullWidth
             label="Course Title"
             value={title}
@@ -221,8 +224,8 @@ export const CreateCourseDialog: React.FC<CreateCourseDialogProps> = ({
             {submitting
               ? "Saving..."
               : isEditing
-              ? "Update Course"
-              : "Create Course"}
+                ? "Update Course"
+                : "Create Course"}
           </Button>
         </DialogActions>
       </form>

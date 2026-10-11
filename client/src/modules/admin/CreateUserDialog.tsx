@@ -20,6 +20,8 @@ export interface CreateUserDialogProps {
   onClose: () => void;
   user?: User | null;
   defaultRole?: UserRole;
+  fixedRole?: UserRole;
+  entityLabel?: string;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -29,13 +31,25 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   onClose,
   user,
   defaultRole = "STUDENT",
+  fixedRole,
+  entityLabel,
   onSuccess,
   onError,
 }) => {
+  const effectiveLabel =
+    entityLabel ||
+    (fixedRole === "STUDENT"
+      ? "Student"
+      : fixedRole === "TEACHER"
+      ? "Teacher"
+      : "User");
+
+  const effectiveDefaultRole = fixedRole || defaultRole;
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>(defaultRole);
+  const [role, setRole] = useState<UserRole>(effectiveDefaultRole);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,15 +60,15 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         setName(user.name || "");
         setEmail(user.email || "");
         setPassword("");
-        setRole(user.role || defaultRole);
+        setRole(fixedRole || user.role || effectiveDefaultRole);
       } else {
         setName("");
         setEmail("");
         setPassword("");
-        setRole(defaultRole);
+        setRole(effectiveDefaultRole);
       }
     }
-  }, [open, user, defaultRole]);
+  }, [open, user, effectiveDefaultRole, fixedRole]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +94,8 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
       return;
     }
 
+    const assignedRole = fixedRole || role;
+
     try {
       setSubmitting(true);
       setError(null);
@@ -88,28 +104,30 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         const payload: UpdateUserPayload = {
           name: name.trim(),
           email: email.trim(),
-          role,
+          role: assignedRole,
           ...(password ? { password } : {}),
         };
         await usersApi.update(user._id, payload);
-        const successMsg = "User updated successfully!";
+        const successMsg = `${effectiveLabel} updated successfully!`;
         onSuccess?.(successMsg);
       } else {
         const payload: CreateUserPayload = {
           name: name.trim(),
           email: email.trim(),
           password,
-          role,
+          role: assignedRole,
         };
         await usersApi.create(payload);
-        const successMsg = "New user created successfully!";
+        const successMsg = `New ${effectiveLabel.toLowerCase()} created successfully!`;
         onSuccess?.(successMsg);
       }
 
       onClose();
     } catch (err: any) {
       const errorMsg =
-        err.response?.data?.message || err.message || "Failed to save user";
+        err.response?.data?.message ||
+        err.message ||
+        `Failed to save ${effectiveLabel.toLowerCase()}`;
       setError(errorMsg);
       onError?.(errorMsg);
     } finally {
@@ -137,7 +155,9 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
     >
       <form onSubmit={handleSubmit}>
         <DialogTitle sx={{ fontWeight: 800 }}>
-          {isEditing ? "Edit User Account" : "Create New User"}
+          {isEditing
+            ? `Edit ${effectiveLabel} Details`
+            : `Add New ${effectiveLabel}`}
         </DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}
@@ -153,8 +173,11 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           )}
 
           <TextField
+            sx={{
+              marginTop: 2,
+            }}
             fullWidth
-            label="Full Name"
+            label={`${effectiveLabel} Name`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -186,18 +209,20 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             }
           />
 
-          <FormControl fullWidth disabled={submitting}>
-            <InputLabel>User Role</InputLabel>
-            <Select
-              value={role}
-              label="User Role"
-              onChange={(e) => setRole(e.target.value as UserRole)}
-            >
-              <MenuItem value="STUDENT">Student</MenuItem>
-              <MenuItem value="TEACHER">Teacher</MenuItem>
-              <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
-            </Select>
-          </FormControl>
+          {!fixedRole && (
+            <FormControl fullWidth disabled={submitting}>
+              <InputLabel>User Role</InputLabel>
+              <Select
+                value={role}
+                label="User Role"
+                onChange={(e) => setRole(e.target.value as UserRole)}
+              >
+                <MenuItem value="STUDENT">Student</MenuItem>
+                <MenuItem value="TEACHER">Teacher</MenuItem>
+                <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
+              </Select>
+            </FormControl>
+          )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={onClose} disabled={submitting} color="inherit">
@@ -208,7 +233,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
               ? "Saving..."
               : isEditing
               ? "Save Changes"
-              : "Create User"}
+              : `Add ${effectiveLabel}`}
           </Button>
         </DialogActions>
       </form>

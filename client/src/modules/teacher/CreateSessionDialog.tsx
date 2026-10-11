@@ -56,7 +56,7 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
       const fetchData = async () => {
         try {
           setLoadingData(true);
-          const coursesList = await coursesApi.getAll()
+          const coursesList = await coursesApi.getAll();
           setCourses(coursesList);
         } catch (err) {
           console.error("Failed to load courses", err);
@@ -89,14 +89,14 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
             ? new Date(sDate.getTime() - sDate.getTimezoneOffset() * 60000)
                 .toISOString()
                 .slice(0, 16)
-            : ""
+            : "",
         );
         setEndTime(
           !isNaN(eDate.getTime())
             ? new Date(eDate.getTime() - eDate.getTimezoneOffset() * 60000)
                 .toISOString()
                 .slice(0, 16)
-            : ""
+            : "",
         );
         setMeetingLink(session.meetingLink || "");
       } else {
@@ -107,7 +107,9 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
         // Default start time: 1 hour from now formatted for datetime-local
         const now = new Date();
         now.setHours(now.getHours() + 1, 0, 0, 0);
-        const startStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        const startStr = new Date(
+          now.getTime() - now.getTimezoneOffset() * 60000,
+        )
           .toISOString()
           .slice(0, 16);
 
@@ -126,8 +128,15 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !courseId || !startTime || !endTime || !meetingLink.trim()) {
-      const msg = "Title, course, start time, end time, and meeting link are required";
+    if (
+      !title.trim() ||
+      !courseId ||
+      !startTime ||
+      !endTime ||
+      !meetingLink.trim()
+    ) {
+      const msg =
+        "Title, course, start time, end time, and meeting link are required";
       setError(msg);
       onError?.(msg);
       return;
@@ -217,6 +226,9 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
           )}
 
           <TextField
+            sx={{
+              marginTop: 2,
+            }}
             fullWidth
             label="Session Title"
             placeholder="e.g. Masterclass on React 19 & Next.js Q&A"
@@ -251,7 +263,9 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
                 courses.map((c) => (
                   <MenuItem key={c._id} value={c._id}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <MenuBook sx={{ fontSize: 18, color: "text.secondary" }} />
+                      <MenuBook
+                        sx={{ fontSize: 18, color: "text.secondary" }}
+                      />
                       <span>{c.title}</span>
                     </Box>
                   </MenuItem>
@@ -332,8 +346,8 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
             {submitting
               ? "Saving..."
               : isEditing
-              ? "Update Session"
-              : "Schedule Session"}
+                ? "Update Session"
+                : "Schedule Session"}
           </Button>
         </DialogActions>
       </form>

@@ -34,7 +34,7 @@ import { usersApi } from "../../api/users";
 import { User } from "../../api/auth";
 import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import CreateStudentDialog from "./CreateStudentDialog";
+import CreateUserDialog from "./CreateUserDialog";
 import AssignTeacherDialog from "./AssignTeacherDialog";
 
 export const AdminStudents: React.FC = () => {
@@ -532,9 +532,11 @@ export const AdminStudents: React.FC = () => {
       </Card>
 
       {/* Add / Edit Student Dialog */}
-      <CreateStudentDialog
+      <CreateUserDialog
         open={formOpen}
-        student={editingStudent}
+        user={editingStudent}
+        fixedRole="STUDENT"
+        entityLabel="Student"
         onClose={() => setFormOpen(false)}
         onSuccess={(msg) => {
           setSnackbar({
