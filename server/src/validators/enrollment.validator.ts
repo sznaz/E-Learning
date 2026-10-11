@@ -6,7 +6,7 @@ const objectIdSchema = z
   .regex(objectIdRegex, "Invalid ObjectId format");
 
 export const createEnrollmentSchema = z.object({
-  student: objectIdSchema,
+  student: objectIdSchema.optional(),
   course: objectIdSchema,
   status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).optional(),
   progress: z.number().min(0).max(100).optional(),

@@ -81,6 +81,16 @@ export const sessionsApi = {
     return res.data.data;
   },
 
+  getByInstructor: async (): Promise<Session[]> => {
+    const res = await apiClient.get<ApiResponse<Session[]>>(`/sessions/instructor`);
+    return res.data.data;
+  },
+
+  getByMyCourses: async (): Promise<Session[]> => {
+    const res = await apiClient.get<ApiResponse<Session[]>>(`/sessions/my-courses`);
+    return res.data.data;
+  },
+
   create: async (payload: CreateSessionPayload): Promise<Session> => {
     const res = await apiClient.post<ApiResponse<Session>>("/sessions", payload);
     return res.data.data;

@@ -9,8 +9,16 @@ import {
   Grid,
   Box,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
 } from "@mui/material";
+import { PeopleAlt, MenuBook } from "@mui/icons-material";
 import { sessionsApi, Session, CreateSessionPayload } from "../../api/sessions";
+import { coursesApi, Course } from "../../api/courses";
+import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
 import { useAuth } from "../../context/AuthContext";
 
 export interface CreateSessionDialogProps {
@@ -32,11 +40,33 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [courseId, setCourseId] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Courses and My Students options
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loadingData, setLoadingData] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      const fetchData = async () => {
+        try {
+          setLoadingData(true);
+          const coursesList = await coursesApi.getAll()
+          setCourses(coursesList);
+        } catch (err) {
+          console.error("Failed to load courses", err);
+        } finally {
+          setLoadingData(false);
+        }
+      };
+      fetchData();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -44,6 +74,12 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
       if (session) {
         setTitle(session.title || "");
         setDescription(session.description || "");
+
+        const existingCourse =
+          typeof session.course === "object"
+            ? session.course?._id
+            : session.course || "";
+        setCourseId(existingCourse);
 
         const sDate = new Date(session.startTime);
         const eDate = new Date(session.endTime);
@@ -66,6 +102,7 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
       } else {
         setTitle("");
         setDescription("");
+        setCourseId("");
 
         // Default start time: 1 hour from now formatted for datetime-local
         const now = new Date();
@@ -89,8 +126,8 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !startTime || !endTime || !meetingLink.trim()) {
-      const msg = "Title, start time, end time, and meeting link are required";
+    if (!title.trim() || !courseId || !startTime || !endTime || !meetingLink.trim()) {
+      const msg = "Title, course, start time, end time, and meeting link are required";
       setError(msg);
       onError?.(msg);
       return;
@@ -120,6 +157,7 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
       const payload: CreateSessionPayload = {
         title: title.trim(),
         description: description.trim() || undefined,
+        course: courseId,
         startTime: startDate.toISOString(),
         endTime: endDate.toISOString(),
         meetingLink: meetingLink.trim(),
@@ -132,7 +170,7 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
         onSuccess?.(successMsg);
       } else {
         await sessionsApi.create(payload);
-        const successMsg = "Live Session scheduled successfully with students!";
+        const successMsg = "Live Session scheduled successfully!";
         onSuccess?.(successMsg);
       }
 
@@ -188,6 +226,39 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
             disabled={submitting}
           />
 
+          {/* Course Select Dropdown */}
+          <FormControl fullWidth required disabled={submitting || loadingData}>
+            <InputLabel id="course-select-label">Select Course</InputLabel>
+            <Select
+              labelId="course-select-label"
+              id="course-select"
+              value={courseId}
+              label="Select Course"
+              onChange={(e) => setCourseId(e.target.value)}
+            >
+              {loadingData ? (
+                <MenuItem disabled value="">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CircularProgress size={16} />
+                    <span>Loading courses...</span>
+                  </Box>
+                </MenuItem>
+              ) : courses.length === 0 ? (
+                <MenuItem disabled value="">
+                  No courses available
+                </MenuItem>
+              ) : (
+                courses.map((c) => (
+                  <MenuItem key={c._id} value={c._id}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <MenuBook sx={{ fontSize: 18, color: "text.secondary" }} />
+                      <span>{c.title}</span>
+                    </Box>
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             label="Description (Optional)"

@@ -28,20 +28,28 @@ import {
   Delete,
   School,
   CheckCircle,
+  PersonAddAlt1,
 } from "@mui/icons-material";
 import { usersApi } from "../../api/users";
 import { User } from "../../api/auth";
+import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import CreateStudentDialog from "./CreateStudentDialog";
+import AssignTeacherDialog from "./AssignTeacherDialog";
 
 export const AdminStudents: React.FC = () => {
   const [students, setStudents] = useState<User[]>([]);
+  const [assignments, setAssignments] = useState<TeacherStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   // Modal
   const [formOpen, setFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<User | null>(null);
+
+  // Assign Teacher Modal
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignStudent, setAssignStudent] = useState<User | null>(null);
 
   // Delete
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -57,8 +65,12 @@ export const AdminStudents: React.FC = () => {
   const loadStudents = async () => {
     try {
       setLoading(true);
-      const allUsers = await usersApi.getAll({ role: "STUDENT" });
+      const [allUsers, allAssignments] = await Promise.all([
+        usersApi.getAll({ role: "STUDENT" }),
+        teacherStudentsApi.getAll().catch(() => []),
+      ]);
       setStudents(allUsers.filter((u) => u.role === "STUDENT"));
+      setAssignments(allAssignments);
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -73,6 +85,23 @@ export const AdminStudents: React.FC = () => {
   useEffect(() => {
     loadStudents();
   }, []);
+
+  const getAssignedTeacher = (studentId?: string): User | null => {
+    if (!studentId) return null;
+    const assignment = assignments.find((a) => {
+      const sId = typeof a.student === "object" && a.student ? a.student._id : a.student;
+      return sId === studentId;
+    });
+    if (!assignment) return null;
+    return typeof assignment.teacher === "object" && assignment.teacher
+      ? (assignment.teacher as any)
+      : null;
+  };
+
+  const handleOpenAssign = (student: User) => {
+    setAssignStudent(student);
+    setAssignOpen(true);
+  };
 
   const handleOpenAdd = () => {
     setEditingStudent(null);
@@ -267,65 +296,101 @@ export const AdminStudents: React.FC = () => {
           </Card>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            {filtered.map((s) => (
-              <Card key={s._id} sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
-                    <Avatar
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        bgcolor: "#3b82f6",
-                        fontWeight: 700,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {s.name.charAt(0)}
-                    </Avatar>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }} color="text.primary" noWrap>
-                        {s.name}
+            {filtered.map((s) => {
+              const teacher = getAssignedTeacher(s?._id);
+              return (
+                <Card key={s._id} sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+                      <Avatar
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: "#3b82f6",
+                          fontWeight: 700,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {s.name.charAt(0)}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }} color="text.primary" noWrap>
+                          {s.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block" }} noWrap>
+                          {s.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Chip
+                      label="Active"
+                      size="small"
+                      color="success"
+                      sx={{ fontWeight: 700, fontSize: "0.72rem", flexShrink: 0 }}
+                    />
+                  </Box>
+
+                  {/* Assigned Teacher for Mobile */}
+                  <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.8 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      Teacher:
+                    </Typography>
+                    {teacher ? (
+                      <Chip
+                        icon={<School sx={{ fontSize: "14px !important" }} />}
+                        label={teacher.name || teacher.email}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: "0.72rem" }}
+                      />
+                    ) : (
+                      <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
+                        Unassigned
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: "block" }} noWrap>
-                        {s.email}
-                      </Typography>
+                    )}
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1, borderTop: "1px solid", borderColor: "divider" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Enrolled: {s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "Active"}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 0.5 }}>
+                      {!teacher && (
+                        <Tooltip title="Assign Teacher">
+                          <IconButton
+                            color="secondary"
+                            size="small"
+                            onClick={() => handleOpenAssign(s)}
+                            sx={{ bgcolor: "rgba(124, 58, 237, 0.08)" }}
+                          >
+                            <PersonAddAlt1 fontSize="small" sx={{ color: "#7c3aed" }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="Edit Student">
+                        <IconButton
+                          color="primary"
+                          size="small"
+                          onClick={() => handleOpenEdit(s)}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Student">
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => setDeleteId(s._id)}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </Box>
-                  <Chip
-                    label="Active"
-                    size="small"
-                    color="success"
-                    sx={{ fontWeight: 700, fontSize: "0.72rem", flexShrink: 0 }}
-                  />
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1, borderTop: "1px solid", borderColor: "divider" }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Enrolled: {s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "Active"}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 0.5 }}>
-                    <Tooltip title="Edit Student">
-                      <IconButton
-                        color="primary"
-                        size="small"
-                        onClick={() => handleOpenEdit(s)}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Student">
-                      <IconButton
-                        color="error"
-                        size="small"
-                        onClick={() => setDeleteId(s._id)}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </Box>
         )}
       </Box>
@@ -338,6 +403,7 @@ export const AdminStudents: React.FC = () => {
               <TableRow>
                 <TableCell>Student</TableCell>
                 <TableCell>Email</TableCell>
+                <TableCell>Assigned Teacher</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Enrolled Date</TableCell>
                 <TableCell align="right">Actions</TableCell>
@@ -362,69 +428,103 @@ export const AdminStudents: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((s) => (
-                  <TableRow key={s._id} hover>
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Avatar
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            bgcolor: "#3b82f6",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {s.name.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }} color="text.primary">
-                            {s.name}
-                          </Typography>
+                filtered.map((s) => {
+                  const teacher = getAssignedTeacher(s?._id);
+                  return (
+                    <TableRow key={s._id} hover>
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Avatar
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              bgcolor: "#3b82f6",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {s.name.charAt(0)}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }} color="text.primary">
+                              {s.name}
+                            </Typography>
+                          </Box>
                         </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {s.email}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label="Active"
-                        size="small"
-                        color="success"
-                        sx={{ fontWeight: 700, fontSize: "0.72rem" }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="caption" color="text.secondary">
-                        {s.createdAt
-                          ? new Date(s.createdAt).toLocaleDateString()
-                          : "Active"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Edit Student">
-                        <IconButton
-                          color="primary"
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {s.email}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {teacher ? (
+                          <Chip
+                            icon={<School sx={{ fontSize: "14px !important" }} />}
+                            label={teacher.name || teacher.email}
+                            size="small"
+                            sx={{
+                              bgcolor: "rgba(124, 58, 237, 0.1)",
+                              color: "#7c3aed",
+                              fontWeight: 600,
+                              fontSize: "0.75rem",
+                            }}
+                          />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
+                            Unassigned
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label="Active"
                           size="small"
-                          onClick={() => handleOpenEdit(s)}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Student">
-                        <IconButton
-                          color="error"
-                          size="small"
-                          onClick={() => setDeleteId(s._id)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))
+                          color="success"
+                          sx={{ fontWeight: 700, fontSize: "0.72rem" }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {s.createdAt
+                            ? new Date(s.createdAt).toLocaleDateString()
+                            : "Active"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        {!teacher && (
+                          <Tooltip title="Assign Teacher">
+                            <IconButton
+                              color="secondary"
+                              size="small"
+                              onClick={() => handleOpenAssign(s)}
+                              sx={{ color: "#7c3aed" }}
+                            >
+                              <PersonAddAlt1 fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title="Edit Student">
+                          <IconButton
+                            color="primary"
+                            size="small"
+                            onClick={() => handleOpenEdit(s)}
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Student">
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => setDeleteId(s._id)}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -432,11 +532,33 @@ export const AdminStudents: React.FC = () => {
       </Card>
 
       {/* Add / Edit Student Dialog */}
-      {/* Add / Edit Student Dialog */}
       <CreateStudentDialog
         open={formOpen}
         student={editingStudent}
         onClose={() => setFormOpen(false)}
+        onSuccess={(msg) => {
+          setSnackbar({
+            open: true,
+            message: msg,
+            severity: "success",
+          });
+          loadStudents();
+        }}
+        onError={(msg) => {
+          setSnackbar({
+            open: true,
+            message: msg,
+            severity: "error",
+          });
+        }}
+      />
+
+      {/* Assign Teacher Dialog */}
+      <AssignTeacherDialog
+        open={assignOpen}
+        student={assignStudent}
+        currentTeacher={getAssignedTeacher(assignStudent?._id)}
+        onClose={() => setAssignOpen(false)}
         onSuccess={(msg) => {
           setSnackbar({
             open: true,

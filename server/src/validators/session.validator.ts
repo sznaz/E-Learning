@@ -12,8 +12,10 @@ export const createSessionSchema = z.object({
     .max(150, "Title cannot exceed 150 characters"),
   description: z.string().optional(),
   instructor: objectIdSchema.optional(),
-  startTime: z.string().datetime({ message: "startTime must be a valid ISO date string" }).or(z.coerce.date()),
-  endTime: z.string().datetime({ message: "endTime must be a valid ISO date string" }).or(z.coerce.date()),
+  course: objectIdSchema.optional(),
+  attendees: z.array(objectIdSchema).optional(),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
   meetingLink: z.string().min(1, "Meeting link is required"),
   status: z.enum(["SCHEDULED", "LIVE", "COMPLETED", "CANCELLED"]).optional(),
 });

@@ -24,12 +24,14 @@ import {
   Logout,
   Menu as MenuIcon,
   Login as LoginIcon,
+  BookmarkBorder,
+  VideoCameraFront,
 } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export const Header: React.FC = () => {
-  const { user, isAuthenticated, isAdmin, isTeacher, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isTeacher, isStudent, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -54,6 +56,21 @@ export const Header: React.FC = () => {
     { label: "Home", path: "/home", icon: <School fontSize="small" /> },
     { label: "Courses", path: "/courses", icon: <MenuBook fontSize="small" /> },
   ];
+
+  if (isStudent) {
+    navLinks.push(
+      {
+        label: "My Courses",
+        path: "/my-courses",
+        icon: <BookmarkBorder fontSize="small" />,
+      },
+      {
+        label: "My Sessions",
+        path: "/my-sessions",
+        icon: <VideoCameraFront fontSize="small" />,
+      }
+    );
+  }
 
   if (isAdmin) {
     navLinks.push({
@@ -253,6 +270,31 @@ export const Header: React.FC = () => {
                       </ListItemIcon>
                       <ListItemText primary="Teacher Portal" />
                     </MenuItem>
+                  )}
+
+                  {isStudent && (
+                    <>
+                      <MenuItem
+                        component={RouterLink}
+                        to="/my-courses"
+                        onClick={handleCloseUserMenu}
+                      >
+                        <ListItemIcon>
+                          <BookmarkBorder fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText primary="My Courses" />
+                      </MenuItem>
+                      <MenuItem
+                        component={RouterLink}
+                        to="/my-sessions"
+                        onClick={handleCloseUserMenu}
+                      >
+                        <ListItemIcon>
+                          <VideoCameraFront fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText primary="My Sessions" />
+                      </MenuItem>
+                    </>
                   )}
 
                   <MenuItem onClick={handleLogout}>

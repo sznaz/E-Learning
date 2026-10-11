@@ -18,9 +18,13 @@ router.get(
   "/",
   authenticate,
   authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await enrollmentService.getEnrollments();
+      const filter: any = { ...req.query };
+      if (req.user?.role === "STUDENT") {
+        filter.student = req.user.id;
+      }
+      const response = await enrollmentService.getEnrollments(filter);
       res.status(response.statusCode).json(response);
     } catch (error) {
       next(error);
@@ -33,9 +37,13 @@ router.get(
   "/all",
   authenticate,
   authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (_req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const response = await enrollmentService.getEnrollments();
+      const filter: any = { ...req.query };
+      if (req.user?.role === "STUDENT") {
+        filter.student = req.user.id;
+      }
+      const response = await enrollmentService.getEnrollments(filter);
       res.status(response.statusCode).json(response);
     } catch (error) {
       next(error);
@@ -67,6 +75,9 @@ router.post(
   validate(createEnrollmentSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!req.body.student && req.user?.id) {
+        req.body.student = req.user.id;
+      }
       const response = await enrollmentService.createEnrollment(req.body);
       res.status(response.statusCode).json(response);
     } catch (error) {

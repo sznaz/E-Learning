@@ -43,6 +43,38 @@ router.get(
   }
 );
 
+// GET sessions by instructor - Accessible by TEACHER, SUPER_ADMIN
+router.get(
+  "/instructor",
+  authenticate,
+  authorizeRoles("TEACHER", "SUPER_ADMIN"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.user?.id as string;
+      const response = await sessionService.getSessions({ instructor: id });
+      res.status(response.statusCode).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// GET sessions by my courses - Accessible by STUDENT
+router.get(
+  "/my-courses",
+  authenticate,
+  authorizeRoles("STUDENT"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.user?.id as string;
+      const response = await sessionService.getSessionsByCourse(id);
+      res.status(response.statusCode).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 // GET session by ID - Accessible by STUDENT, TEACHER, SUPER_ADMIN
 router.get(
   "/:id",

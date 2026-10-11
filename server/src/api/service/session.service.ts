@@ -5,23 +5,30 @@ import {
   IResponse,
 } from "../../types";
 import { ISession } from "../models/session.model";
-import SessionQueries, { ISessionFilterOptions } from "../queries/session.queries";
-import { User } from "../models/user.model";
-import { Course } from "../models/course.model";
+import SessionQueries, {
+  ISessionFilterOptions,
+} from "../queries/session.queries";
+import UserQueries from "../queries/user.queries";
+import CourseQueries from "../queries/course.queries";
+import EnrollmentQueries from "../queries/enrollment.queries";
+import { IEnrollment } from "../models/enrollment.model";
 
 const sessionQueries = new SessionQueries();
+const enrollmentQueries = new EnrollmentQueries();
+const userQueries = new UserQueries();
+const courseQueries = new CourseQueries();
 
 class SessionService {
   public createSession = async (
-    payload: ICreateSessionPayload
+    payload: ICreateSessionPayload,
   ): Promise<IResponse<ISession | null>> => {
-    const instructorExists = await User.findById(payload.instructor);
+    const instructorExists = await userQueries.findById(payload.instructor);
     if (!instructorExists) {
       return Responses.badRequest("Instructor not found with provided ID");
     }
 
     if (payload.course) {
-      const courseExists = await Course.findById(payload.course);
+      const courseExists = await courseQueries.findById(payload.course);
       if (!courseExists) {
         return Responses.badRequest("Course not found with provided ID");
       }
@@ -32,14 +39,27 @@ class SessionService {
   };
 
   public getSessions = async (
-    options: ISessionFilterOptions = {}
+    options: ISessionFilterOptions = {},
   ): Promise<IResponse<ISession[]>> => {
     const result = await sessionQueries.getAll(options);
     return Responses.ok(result);
   };
 
+  public getSessionsByCourse = async (
+    userId: string,
+  ): Promise<IResponse<ISession[] | null>> => {
+    const enrollments: IEnrollment[] | null =
+      await enrollmentQueries.findByStudent(userId);
+    if (!enrollments) {
+      return Responses.notFound("No enrollments found for this student");
+    }
+    const courseIds = enrollments.map((e) => e.course);
+    const result = await sessionQueries.getAllByCourse(courseIds);
+    return Responses.ok(result);
+  };
+
   public getSessionById = async (
-    id: string
+    id: string,
   ): Promise<IResponse<ISession | null>> => {
     const session = await sessionQueries.findById(id);
     if (!session) {
@@ -50,17 +70,17 @@ class SessionService {
 
   public updateSession = async (
     id: string,
-    payload: IUpdateSessionPayload
+    payload: IUpdateSessionPayload,
   ): Promise<IResponse<ISession | null>> => {
     if (payload.instructor) {
-      const instructorExists = await User.findById(payload.instructor);
+      const instructorExists = await userQueries.findById(payload.instructor);
       if (!instructorExists) {
         return Responses.badRequest("Instructor not found with provided ID");
       }
     }
 
     if (payload.course) {
-      const courseExists = await Course.findById(payload.course);
+      const courseExists = await courseQueries.findById(payload.course);
       if (!courseExists) {
         return Responses.badRequest("Course not found with provided ID");
       }
@@ -74,7 +94,7 @@ class SessionService {
   };
 
   public deleteSession = async (
-    id: string
+    id: string,
   ): Promise<IResponse<ISession | null>> => {
     const deletedSession = await sessionQueries.delete(id);
     if (!deletedSession) {

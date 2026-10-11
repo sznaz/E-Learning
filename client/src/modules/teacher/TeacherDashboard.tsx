@@ -19,14 +19,13 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { sessionsApi, Session } from "../../api/sessions";
-import { usersApi } from "../../api/users";
 import { coursesApi, Course } from "../../api/courses";
-import { User } from "../../api/auth";
+import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
 
 export const TeacherDashboard: React.FC = () => {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [students, setStudents] = useState<User[]>([]);
+  const [students, setStudents] = useState<TeacherStudent[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,13 +33,13 @@ export const TeacherDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [sessData, studentsData, coursesData] = await Promise.all([
-          sessionsApi.getAll(),
-          usersApi.getAll({ role: "STUDENT" }),
+        const [sessData, assignedStudents, coursesData] = await Promise.all([
+          sessionsApi.getByInstructor(),
+          teacherStudentsApi.getAll().catch(() => []),
           coursesApi.getAll(),
         ]);
         setSessions(sessData);
-        setStudents(studentsData.filter((u) => u.role === "STUDENT"));
+        setStudents(assignedStudents);
         setCourses(coursesData);
       } catch (err) {
         console.error("Failed to load dashboard data", err);
@@ -204,7 +203,7 @@ export const TeacherDashboard: React.FC = () => {
                 {sessions.filter((s) => s.status === "LIVE").length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Live Now
+                Live Sessions
               </Typography>
             </Box>
           </Card>

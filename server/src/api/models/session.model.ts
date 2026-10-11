@@ -6,6 +6,7 @@ export interface ISession extends Document {
   title: string;
   description?: string;
   instructor: Types.ObjectId;
+  course: Types.ObjectId;
   startTime: Date;
   endTime: Date;
   meetingLink: string;
@@ -28,6 +29,11 @@ const sessionSchema = new Schema<ISession>(
     instructor: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
       required: true,
     },
     startTime: {

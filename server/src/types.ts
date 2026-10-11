@@ -132,3 +132,14 @@ export interface IUpdateEnrollmentPayload {
   progress?: number;
   completedAt?: Date | string | null;
 }
+
+// Teacher-Student Payloads
+export interface ICreateTeacherStudentPayload {
+  teacher: string;
+  student: string;
+}
+
+export interface ITeacherStudentFilterOptions {
+  teacher?: string;
+  student?: string;
+}

@@ -149,35 +149,6 @@ export const AdminLayout: React.FC = () => {
             </ListItem>
           );
         })}
-
-        <Divider sx={{ my: 2, borderColor: "rgba(255, 255, 255, 0.08)" }} />
-
-        {/* Public view links */}
-        <ListItem disablePadding sx={{ mb: 1 }}>
-          <ListItemButton
-            component={RouterLink}
-            to="/courses"
-            sx={{
-              borderRadius: 2,
-              py: 1,
-              px: 2,
-              color: "#94a3b8",
-              "&:hover": { color: "#f8fafc", backgroundColor: "rgba(255,255,255,0.06)" },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40, color: "#64748b" }}>
-              <PublicOutlined />
-            </ListItemIcon>
-            <ListItemText
-              primary="Public Course Catalog"
-              slotProps={{
-                primary: {
-                  sx: { fontSize: "0.88rem" },
-                },
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
       </List>
 
       {/* Admin User Footer Profile */}
@@ -272,15 +243,6 @@ export const AdminLayout: React.FC = () => {
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.25rem" } }} color="text.primary" noWrap>
               Management Portal
             </Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Chip
-              label={user?.role || "SUPER_ADMIN"}
-              size="small"
-              color={user?.role === "SUPER_ADMIN" ? "secondary" : "primary"}
-              sx={{ fontWeight: 700, fontSize: "0.75rem" }}
-            />
           </Box>
         </Toolbar>
       </AppBar>

@@ -9,25 +9,28 @@ import {
   CardMedia,
   CardContent,
   Chip,
-  Avatar,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
-  School,
   MenuBook,
   WorkspacePremium,
-  TrendingUp,
   ArrowForward,
   AdminPanelSettings,
-  Star,
-  CheckCircle,
 } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import { coursesApi, Course } from "../../../../api/courses";
 import { useAuth } from "../../../../context/AuthContext";
+import CourseDetailModal from "../../../../components/CourseDetailModal";
 
 export const HomePage: React.FC = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+  const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [enrolledNotice, setEnrolledNotice] = useState<string | null>(null);
 
   useEffect(() => {
     coursesApi.getAll().then((data) => {
@@ -287,11 +290,10 @@ export const HomePage: React.FC = () => {
                     {c.description}
                   </Typography>
                   <Button
-                    component={RouterLink}
-                    to="/courses"
                     variant="outlined"
                     fullWidth
-                    sx={{ mt: "auto" }}
+                    onClick={() => setActiveCourse(c)}
+                    sx={{ mt: "auto", borderRadius: 2, fontWeight: 700 }}
                   >
                     View Details
                   </Button>
@@ -301,6 +303,33 @@ export const HomePage: React.FC = () => {
           ))}
         </Grid>
       </Container>
+
+      {/* Course Detail Modal */}
+      <CourseDetailModal
+        course={activeCourse}
+        open={Boolean(activeCourse)}
+        onClose={() => setActiveCourse(null)}
+        isEnrolled={Boolean(
+          activeCourse && enrolledCourseIds.has(activeCourse._id)
+        )}
+        onEnrollSuccess={(course) => {
+          setEnrolledCourseIds((prev) => new Set([...prev, course._id]));
+          setEnrolledNotice(
+            `🎉 You have successfully enrolled in "${course.title}"!`
+          );
+        }}
+      />
+
+      {/* Enrollment Notice Toast */}
+      <Snackbar
+        open={Boolean(enrolledNotice)}
+        autoHideDuration={4000}
+        onClose={() => setEnrolledNotice(null)}
+      >
+        <Alert severity="success" sx={{ width: "100%", borderRadius: 2 }}>
+          {enrolledNotice}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

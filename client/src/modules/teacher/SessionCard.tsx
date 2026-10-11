@@ -18,6 +18,7 @@ import {
   CheckCircle,
   VideoCameraFront,
   OpenInNew,
+  MenuBook,
 } from "@mui/icons-material";
 import { Session, SessionStatus } from "../../api/sessions";
 
@@ -123,6 +124,19 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {/* Body Content */}
       <Box sx={{ p: { xs: 2, sm: 2.5 }, flexGrow: 1, display: "flex", flexDirection: "column" }}>
+        {typeof session.course === "object" && session.course?.title && (
+          <Box sx={{ mb: 1 }}>
+            <Chip
+              icon={<MenuBook sx={{ fontSize: "14px !important" }} />}
+              label={session.course.title}
+              size="small"
+              variant="outlined"
+              color="primary"
+              sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+            />
+          </Box>
+        )}
+
         <Typography
           variant="h6"
           sx={{

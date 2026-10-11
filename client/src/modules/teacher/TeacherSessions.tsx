@@ -48,7 +48,7 @@ export const TeacherSessions: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const sessionsData = await sessionsApi.getAll();
+      const sessionsData = await sessionsApi.getByInstructor();
       setSessions(sessionsData);
     } catch (err: any) {
       setSnackbar({

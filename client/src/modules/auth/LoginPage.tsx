@@ -43,13 +43,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  const from = (location.state as any)?.from?.pathname;
-
   const handleRedirect = (userRole?: string) => {
-    if (from) {
-      navigate(from, { replace: true });
-      return;
-    }
     if (userRole === "SUPER_ADMIN") {
       navigate("/admin", { replace: true });
     } else if (userRole === "TEACHER") {

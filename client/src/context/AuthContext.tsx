@@ -7,6 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isTeacher: boolean;
+  isStudent: boolean;
   isLoading: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
@@ -83,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAdmin = user?.role === "SUPER_ADMIN";
   const isTeacher = user?.role === "TEACHER";
+  const isStudent = user?.role === "STUDENT" || Boolean(user && !isAdmin && !isTeacher);
   const isAuthenticated = Boolean(user && token);
 
   return (
@@ -93,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated,
         isAdmin,
         isTeacher,
+        isStudent,
         isLoading,
         login,
         register,

@@ -8,6 +8,7 @@ import enrollmentRouter from "./api/routes/enrollment.router";
 import sessionRouter from "./api/routes/session.router";
 import userRouter from "./api/routes/user.router";
 import authRouter from "./api/routes/auth.router";
+import teacherStudentRouter from "./api/routes/teacher-student.router";
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/courses", courseRouter);
 app.use("/api/enrollments", enrollmentRouter);
 app.use("/api/sessions", sessionRouter);
 app.use("/api/users", userRouter);
+app.use("/api/teacher-students", teacherStudentRouter);
 
 // 404 handler for undefined routes
 app.use((_req, res) => {

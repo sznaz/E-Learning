@@ -174,34 +174,6 @@ export const TeacherLayout: React.FC = () => {
           );
         })}
 
-        <Divider sx={{ my: 2, borderColor: "rgba(255, 255, 255, 0.08)" }} />
-
-        {/* Public view links */}
-        <ListItem disablePadding sx={{ mb: 1 }}>
-          <ListItemButton
-            component={RouterLink}
-            to="/courses"
-            sx={{
-              borderRadius: 2,
-              py: 1,
-              px: 2,
-              color: "#94a3b8",
-              "&:hover": { color: "#f8fafc", backgroundColor: "rgba(255,255,255,0.06)" },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 40, color: "#64748b" }}>
-              <PublicOutlined />
-            </ListItemIcon>
-            <ListItemText
-              primary="Public Catalog"
-              slotProps={{
-                primary: {
-                  sx: { fontSize: "0.88rem" },
-                },
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
       </List>
 
       {/* Teacher Footer Profile */}
@@ -296,20 +268,6 @@ export const TeacherLayout: React.FC = () => {
             <Typography variant="h6" sx={{ fontWeight: 800 }} color="text.primary">
               Instructor Dashboard
             </Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Chip
-              label="Teacher Mode"
-              size="small"
-              sx={{
-                bgcolor: "rgba(16, 185, 129, 0.12)",
-                color: "#059669",
-                fontWeight: 700,
-                fontSize: "0.78rem",
-                border: "1px solid rgba(16, 185, 129, 0.3)",
-              }}
-            />
           </Box>
         </Toolbar>
       </AppBar>

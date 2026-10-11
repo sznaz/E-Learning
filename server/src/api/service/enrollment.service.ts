@@ -8,21 +8,23 @@ import { IEnrollment } from "../models/enrollment.model";
 import EnrollmentQueries, {
   IEnrollmentFilterOptions,
 } from "../queries/enrollment.queries";
-import { User } from "../models/user.model";
-import { Course } from "../models/course.model";
+import UserQueries from "../queries/user.queries";
+import CourseQueries from "../queries/course.queries";
 
 const enrollmentQueries = new EnrollmentQueries();
+const userQueries = new UserQueries();
+const courseQueries = new CourseQueries();
 
 class EnrollmentService {
   public createEnrollment = async (
     payload: ICreateEnrollmentPayload
   ): Promise<IResponse<IEnrollment | null>> => {
-    const student = await User.findById(payload.student);
+    const student = await userQueries.findById(payload.student);
     if (!student) {
       return Responses.badRequest("Student not found with provided ID");
     }
 
-    const course = await Course.findById(payload.course);
+    const course = await courseQueries.findById(payload.course);
     if (!course) {
       return Responses.badRequest("Course not found with provided ID");
     }
