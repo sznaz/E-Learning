@@ -25,11 +25,11 @@ import {
 } from "@mui/icons-material";
 import { coursesApi, Course } from "../../api/courses";
 import { enrollmentsApi } from "../../api/enrollments";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/useAuthStore";
 import CourseDetailModal from "../../components/CourseDetailModal";
 
 export const CoursesPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);

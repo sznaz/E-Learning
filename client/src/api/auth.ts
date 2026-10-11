@@ -47,9 +47,8 @@ export const authApi = {
   logout: async () => {
     try {
       await apiClient.post("/auth/logout");
-    } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+    } catch (error) {
+      console.error("Logout error", error);
     }
   },
 };

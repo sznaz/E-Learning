@@ -26,7 +26,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Course } from "../api/courses";
 import { enrollmentsApi } from "../api/enrollments";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface CourseDetailModalProps {
   course: Course | null;
@@ -43,7 +43,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   isEnrolled = false,
   onEnrollSuccess,
 }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);

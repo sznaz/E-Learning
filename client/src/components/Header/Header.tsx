@@ -28,10 +28,11 @@ import {
   VideoCameraFront,
 } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/useAuthStore";
+import { authApi } from "../../api/auth";
 
 export const Header: React.FC = () => {
-  const { user, isAuthenticated, isAdmin, isTeacher, isStudent, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isTeacher, isStudent, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,7 +49,12 @@ export const Header: React.FC = () => {
 
   const handleLogout = async () => {
     handleCloseUserMenu();
-    await logout();
+    try {
+      await authApi.logout();
+    } catch (e) {
+      console.error("Logout request failed", e);
+    }
+    logout();
     navigate("/login");
   };
 

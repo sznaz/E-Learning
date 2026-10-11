@@ -19,7 +19,7 @@ import { PeopleAlt, MenuBook } from "@mui/icons-material";
 import { sessionsApi, Session, CreateSessionPayload } from "../../api/sessions";
 import { coursesApi, Course } from "../../api/courses";
 import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export interface CreateSessionDialogProps {
   open: boolean;
@@ -36,7 +36,7 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
   onSuccess,
   onError,
 }) => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

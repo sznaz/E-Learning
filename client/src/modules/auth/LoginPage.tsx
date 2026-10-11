@@ -12,10 +12,6 @@ import {
   InputAdornment,
   CircularProgress,
   Container,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import {
   Visibility,
@@ -25,15 +21,15 @@ import {
   EmailOutlined,
   PersonOutlined,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { UserRole } from "../../api/auth";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore";
+import { authApi } from "../../api/auth";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, register, isLoading } = useAuth();
+  const { setAuth } = useAuthStore();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [tab, setTab] = useState<0 | 1>(0);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -63,11 +59,11 @@ export const LoginPage: React.FC = () => {
           setErrorMsg("Please fill in both email and password.");
           return;
         }
-        await login({ email, password });
-        // Retrieve updated user to redirect
-        const saved = localStorage.getItem("user");
-        const parsed = saved ? JSON.parse(saved) : null;
-        handleRedirect(parsed?.role);
+        setIsLoading(true);
+        const res = await authApi.login({ email, password });
+        const { user: userData, token: userToken } = res.data;
+        setAuth(userData, userToken);
+        handleRedirect(userData?.role);
       } else {
         if (!name || !email || !password) {
           setErrorMsg("Please fill in all required fields.");
@@ -77,16 +73,19 @@ export const LoginPage: React.FC = () => {
           setErrorMsg("Password must be at least 6 characters.");
           return;
         }
-        await register({ name, email, password, role: "STUDENT" });
-        const saved = localStorage.getItem("user");
-        const parsed = saved ? JSON.parse(saved) : null;
-        handleRedirect(parsed?.role);
+        setIsLoading(true);
+        const res = await authApi.register({ name, email, password, role: "STUDENT" });
+        const { user: userData, token: userToken } = res.data;
+        setAuth(userData, userToken);
+        handleRedirect(userData?.role);
       }
     } catch (err: any) {
       const msg =
         err.response?.data?.message ||
         "An error occurred. Please verify your credentials.";
       setErrorMsg(msg);
+    } finally {
+      setIsLoading(false);
     }
   };
 

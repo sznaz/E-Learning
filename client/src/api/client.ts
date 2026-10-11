@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "../store/useAuthStore";
 
 const baseURL = import.meta.env.VITE_API_URL || "/api";
 
@@ -10,10 +11,10 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor to attach JWT token from localStorage
+// Request interceptor to attach JWT token directly from Zustand store
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = useAuthStore.getState().token;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,14 +28,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // If token expired, clear invalid auth
-      const currentPath = window.location.pathname;
-      if (currentPath.startsWith("/admin")) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        // Dispatch custom event or redirect if on protected route
-        window.dispatchEvent(new Event("auth:unauthorized"));
-      }
+      useAuthStore.getState().clearAuth();
     }
     return Promise.reject(error);
   }

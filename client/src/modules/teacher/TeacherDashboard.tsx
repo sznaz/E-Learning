@@ -17,13 +17,13 @@ import {
   PeopleAlt,
 } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/useAuthStore";
 import { sessionsApi, Session } from "../../api/sessions";
 import { coursesApi, Course } from "../../api/courses";
 import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
 
 export const TeacherDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [students, setStudents] = useState<TeacherStudent[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);

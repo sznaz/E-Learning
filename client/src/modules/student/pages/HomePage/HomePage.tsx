@@ -20,11 +20,11 @@ import {
 } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import { coursesApi, Course } from "../../../../api/courses";
-import { useAuth } from "../../../../context/AuthContext";
+import { useAuthStore } from "../../../../store/useAuthStore";
 import CourseDetailModal from "../../../../components/CourseDetailModal";
 
 export const HomePage: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useAuthStore();
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(
@@ -268,7 +268,7 @@ export const HomePage: React.FC = () => {
                 />
                 <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                    <Chip label={c.category} size="small" variant="outlined" />
+                    <Chip label={c.level} size="small" variant="outlined" />
                     <Typography variant="subtitle1" sx={{ fontWeight: 800 }} color="primary.main">
                       ${c.price?.toFixed(2)}
                     </Typography>

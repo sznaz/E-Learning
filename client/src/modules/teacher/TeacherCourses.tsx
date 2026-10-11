@@ -29,6 +29,8 @@ export const TeacherCourses: React.FC = () => {
   useEffect(() => {
     loadCourses();
   }, []);
+      const defaultThumbnail =
+    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=60";
 
   return (
     <Box>
@@ -72,17 +74,14 @@ export const TeacherCourses: React.FC = () => {
                   border: "1px solid rgba(226, 232, 240, 0.9)",
                 }}
               >
-                {c.thumbnail && (
                   <Box
                     component="img"
-                    src={c.thumbnail}
+                    src={c.thumbnail || defaultThumbnail}
                     alt={c.title}
                     sx={{ width: "100%", height: 160, objectFit: "cover" }}
                   />
-                )}
                 <Box sx={{ p: 2.5, flexGrow: 1, display: "flex", flexDirection: "column" }}>
                   <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-                    <Chip label={c.category} size="small" color="primary" sx={{ fontWeight: 700, fontSize: "0.72rem" }} />
                     <Chip label={c.level} size="small" variant="outlined" sx={{ fontSize: "0.72rem" }} />
                   </Box>
                   <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, lineHeight: 1.3 }}>

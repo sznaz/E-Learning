@@ -30,7 +30,8 @@ import {
   AdminPanelSettings,
 } from "@mui/icons-material";
 import { useNavigate, useLocation, Outlet, Link as RouterLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/useAuthStore";
+import { authApi } from "../../api/auth";
 
 const DRAWER_WIDTH = 260;
 
@@ -39,7 +40,7 @@ export const AdminLayout: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,7 +49,12 @@ export const AdminLayout: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await logout();
+    try {
+      await authApi.logout();
+    } catch (e) {
+      console.error("Logout error", e);
+    }
+    logout();
     navigate("/login");
   };
 
