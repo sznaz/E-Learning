@@ -61,7 +61,7 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_jwt_secret,
 NODE_ENV=development
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=your_frontend_url
 ```
 
 ## Start Backend
