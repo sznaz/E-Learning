@@ -16,6 +16,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { PeopleAlt, MenuBook } from "@mui/icons-material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import dayjs, { Dayjs } from "dayjs";
 import { sessionsApi, Session, CreateSessionPayload } from "../../api/sessions";
 import { coursesApi, Course } from "../../api/courses";
 import { teacherStudentsApi, TeacherStudent } from "../../api/teacherStudents";
@@ -41,8 +43,8 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [courseId, setCourseId] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [startTime, setStartTime] = useState<Dayjs | null>(null);
+  const [endTime, setEndTime] = useState<Dayjs | null>(null);
   const [meetingLink, setMeetingLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,49 +83,35 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
             : session.course || "";
         setCourseId(existingCourse);
 
-        const sDate = new Date(session.startTime);
-        const eDate = new Date(session.endTime);
-
-        setStartTime(
-          !isNaN(sDate.getTime())
-            ? new Date(sDate.getTime() - sDate.getTimezoneOffset() * 60000)
-                .toISOString()
-                .slice(0, 16)
-            : "",
-        );
-        setEndTime(
-          !isNaN(eDate.getTime())
-            ? new Date(eDate.getTime() - eDate.getTimezoneOffset() * 60000)
-                .toISOString()
-                .slice(0, 16)
-            : "",
-        );
+        setStartTime(session.startTime ? dayjs(session.startTime) : null);
+        setEndTime(session.endTime ? dayjs(session.endTime) : null);
         setMeetingLink(session.meetingLink || "");
       } else {
         setTitle("");
         setDescription("");
         setCourseId("");
 
-        // Default start time: 1 hour from now formatted for datetime-local
-        const now = new Date();
-        now.setHours(now.getHours() + 1, 0, 0, 0);
-        const startStr = new Date(
-          now.getTime() - now.getTimezoneOffset() * 60000,
-        )
-          .toISOString()
-          .slice(0, 16);
+        // Default start time: 1 hour from now (future time)
+        const defaultStart = dayjs().add(1, "hour").minute(0).second(0);
+        const defaultEnd = defaultStart.add(1, "hour");
 
-        const end = new Date(now.getTime() + 60 * 60 * 1000);
-        const endStr = new Date(end.getTime() - end.getTimezoneOffset() * 60000)
-          .toISOString()
-          .slice(0, 16);
-
-        setStartTime(startStr);
-        setEndTime(endStr);
+        setStartTime(defaultStart);
+        setEndTime(defaultEnd);
         setMeetingLink("https://meet.google.com/new");
       }
     }
   }, [open, session]);
+
+  const isEditing = Boolean(session);
+  const now = dayjs();
+  const minStartTime =
+    isEditing && session && dayjs(session.startTime).isBefore(now)
+      ? undefined
+      : now.startOf("minute");
+  const minEndTime =
+    startTime && startTime.isAfter(now)
+      ? startTime.add(1, "minute")
+      : now.startOf("minute");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,17 +130,33 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
       return;
     }
 
-    const startDate = new Date(startTime);
-    const endDate = new Date(endTime);
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    if (!startTime.isValid() || !endTime.isValid()) {
       const msg = "Please provide valid start and end dates/times";
       setError(msg);
       onError?.(msg);
       return;
     }
 
-    if (endDate <= startDate) {
+    const currentCheck = dayjs();
+
+    // Start time must be current or future time only (with 2-minute tolerance for form submission)
+    if (!isEditing && startTime.isBefore(currentCheck.subtract(2, "minute"))) {
+      const msg = "Start time must be current or future time only";
+      setError(msg);
+      onError?.(msg);
+      return;
+    }
+
+    // End time must be after the current time
+    if (endTime.isBefore(currentCheck)) {
+      const msg = "End time must be after the current time";
+      setError(msg);
+      onError?.(msg);
+      return;
+    }
+
+    // End time must be after start time
+    if (endTime.isBefore(startTime) || endTime.isSame(startTime)) {
       const msg = "End time must be after start time";
       setError(msg);
       onError?.(msg);
@@ -167,8 +171,8 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
         title: title.trim(),
         description: description.trim() || undefined,
         course: courseId,
-        startTime: startDate.toISOString(),
-        endTime: endDate.toISOString(),
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
         meetingLink: meetingLink.trim(),
         instructor: user?._id,
       };
@@ -193,8 +197,6 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
       setSubmitting(false);
     }
   };
-
-  const isEditing = Boolean(session);
 
   return (
     <Dialog
@@ -286,31 +288,45 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
+              <DateTimePicker
                 label="Start Date & Time"
-                type="datetime-local"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                slotProps={{
-                  inputLabel: { shrink: true },
+                onChange={(newValue) => {
+                  setStartTime(newValue);
+                  if (
+                    newValue &&
+                    (!endTime ||
+                      endTime.isBefore(newValue) ||
+                      endTime.isSame(newValue))
+                  ) {
+                    setEndTime(newValue.add(1, "hour"));
+                  }
                 }}
-                required
+                minDateTime={minStartTime}
                 disabled={submitting}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true,
+                    helperText: "Current or future time only",
+                  },
+                }}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
+              <DateTimePicker
                 label="End Date & Time"
-                type="datetime-local"
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                slotProps={{
-                  inputLabel: { shrink: true },
-                }}
-                required
+                onChange={(newValue) => setEndTime(newValue)}
+                minDateTime={minEndTime}
                 disabled={submitting}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true,
+                    helperText: "Must be after current time and start time",
+                  },
+                }}
               />
             </Grid>
           </Grid>
