@@ -32,25 +32,6 @@ router.get(
   }
 );
 
-// GET all enrollments alias (/all) - Accessible by STUDENT, TEACHER, SUPER_ADMIN
-router.get(
-  "/all",
-  authenticate,
-  authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const filter: any = { ...req.query };
-      if (req.user?.role === "STUDENT") {
-        filter.student = req.user.id;
-      }
-      const response = await enrollmentService.getEnrollments(filter);
-      res.status(response.statusCode).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
 // GET enrollment by ID - Accessible by STUDENT, TEACHER, SUPER_ADMIN
 router.get(
   "/:id",

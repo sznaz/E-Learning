@@ -28,21 +28,6 @@ router.get(
   }
 );
 
-// GET all users alias (/all) - Accessible by SUPER_ADMIN and TEACHER
-router.get(
-  "/all",
-  authenticate,
-  authorizeRoles("SUPER_ADMIN", "TEACHER"),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const response = await userService.getUsers(req.query);
-      res.status(response.statusCode).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
 // GET user by ID - Accessible by STUDENT, TEACHER, SUPER_ADMIN
 router.get(
   "/:id",

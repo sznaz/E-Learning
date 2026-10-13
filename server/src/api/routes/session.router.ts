@@ -28,21 +28,6 @@ router.get(
   }
 );
 
-// GET all sessions alias (/all) - Accessible by STUDENT, TEACHER, SUPER_ADMIN
-router.get(
-  "/all",
-  authenticate,
-  authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const response = await sessionService.getSessions(req.query as any);
-      res.status(response.statusCode).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
 // GET sessions by instructor - Accessible by TEACHER, SUPER_ADMIN
 router.get(
   "/instructor",

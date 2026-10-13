@@ -6,7 +6,6 @@ Built with:
 
 - React + TypeScript + Vite
 - Material UI
-- TanStack Query
 - Zustand
 - Axios
 - Node.js + Express + TypeScript
@@ -60,15 +59,8 @@ Create a `.env` file inside the `server` folder.
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
-CLIENT_URL=http://localhost:5173
-```
-
-Example:
-
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/e-learning
-JWT_SECRET=your-super-secret-key
+JWT_REFRESH_SECRET=your_jwt_secret,
+NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 ```
 
@@ -168,7 +160,7 @@ Role Authorization
 - View course details
 - Mock enrollment/payment
 - View enrolled courses
-- View dashboard
+- View Sessions
 
 ## Teacher
 
@@ -185,54 +177,6 @@ Role Authorization
 - View users
 - Create/update/delete courses
 - Create/update/delete users
-
----
-
-# API Endpoints
-
-## Authentication
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Register student |
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/me` | Get current user |
-
-## Courses
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/courses` | Get all courses |
-| GET | `/api/courses/:id` | Get course by ID |
-| POST | `/api/courses` | Create course |
-| PUT | `/api/courses/:id` | Update course |
-| DELETE | `/api/courses/:id` | Delete course |
-
-## Enrollments
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/enrollments` | Enroll in a course |
-| GET | `/api/enrollments/my-courses` | Get student's courses |
-
-## Users
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/users` | Get users |
-| GET | `/api/users/:id` | Get user |
-| PUT | `/api/users/:id` | Update user |
-| DELETE | `/api/users/:id` | Delete user |
-
-## Sessions
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/sessions` | Get sessions |
-| POST | `/api/sessions` | Create session |
-| PUT | `/api/sessions/:id` | Update session |
-| DELETE | `/api/sessions/:id` | Delete session |
 
 ---
 
@@ -284,12 +228,9 @@ Role Authorization
 - TypeScript
 - Vite
 - Material UI
-- TanStack Query
 - Zustand
 - Axios
 - React Router
-- React Hook Form
-- Zod
 
 ## Backend
 
@@ -305,27 +246,6 @@ Role Authorization
 - CORS
 
 ---
-
-# State Management
-
-### TanStack Query
-
-Used for server state management including:
-
-- Courses
-- Students
-- Sessions
-- Enrollments
-- User data
-
-### Zustand
-
-Used for lightweight client-side state such as:
-
-- UI state
-- Sidebar state
-- User preferences
-- Other global client state
 
 ---
 
@@ -401,31 +321,6 @@ This can be replaced with Razorpay or another payment gateway in a production ve
 
 ---
 
-# Demo Credentials
-
-## Super Admin
-
-```text
-Email: admin@example.com
-Password: ********
-```
-
-## Teacher
-
-```text
-Email: teacher@example.com
-Password: ********
-```
-
-## Student
-
-```text
-Email: student@example.com
-Password: ********
-```
-
----
-
 # Deployment
 
 The application can be deployed using:
@@ -436,16 +331,10 @@ The application can be deployed using:
 
 ### Backend
 
-- Render / AWS
+- Render
 
 ### Database
 
 - MongoDB Atlas
 
 Environment variables should be configured separately for development and production environments.
-
----
-
-# License
-
-This project is developed as an MVP demonstration for the E-Learning Platform.

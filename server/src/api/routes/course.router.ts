@@ -26,20 +26,6 @@ router.get(
   }
 );
 
-// GET all courses alias (/all) - Accessible by STUDENT, TEACHER, SUPER_ADMIN
-router.get(
-  "/all",
-  authenticate,
-  authorizeRoles("STUDENT", "TEACHER", "SUPER_ADMIN"),
-  async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      const response = await courseService.getCourses();
-      res.status(response.statusCode).json(response);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
 
 // GET course by ID - Accessible by all users
 router.get(
